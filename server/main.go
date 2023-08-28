@@ -1,30 +1,30 @@
 package main
 
 import (
-	"fmt"
+	services_proto "grpcserver/services-proto"
 	"log"
 	"net"
-	"server/services"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
-	servers := grpc.NewServer()
 
+	//1. init server grpc
+	serv := grpc.NewServer()
+
+	// create listener for run server
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//1.register for use gRPC service
-	services.RegisterCalculatorServer(servers, services.NewCalculatorServer())
+	//call grpc register with service implement interface proto
+	services_proto.RegisterCalculatorServer(serv, services_proto.NewCalculatorServer())
 
-	fmt.Println("gRPC server listening on port :50051")
-	//2.run server
-	err = servers.Serve(lis)
-	if err != nil {
+	// run server
+	log.Println("gRPC server listening on port 50051")
+	if err := serv.Serve(lis); err != nil {
 		log.Fatal(err)
 	}
-
 }

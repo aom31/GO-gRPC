@@ -1,4 +1,4 @@
-package services
+package services_proto
 
 import (
 	context "context"
@@ -14,12 +14,12 @@ func NewCalculatorServer() CalculatorServer {
 
 func (calculatorServer) mustEmbedUnimplementedCalculatorServer() {}
 
-// implement service on server with func on interface in file _grpc.pb.go
-func (calculatorServer) Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error) {
+func (server calculatorServer) Hello(ctx context.Context, req *HelloRequest) (*HelloResponse, error) {
+
 	result := fmt.Sprintf("Hello %s", req.Name)
-	res := HelloResponse{
+	response := HelloResponse{
+
 		Result: result,
 	}
-
-	return &res, nil
+	return &response, nil
 }

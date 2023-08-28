@@ -1,30 +1,29 @@
 package main
 
 import (
-	"client/services"
+	services_proto "GO-gRPC/client/services-proto"
 	"log"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
-
-	//use insecure
-	creds := insecure.NewCredentials()
-	cc, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(creds))
+	// 1. connect to grpc server and port start
+	cc, err := grpc.Dial("localhost:50051")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer cc.Close()
 
-	calculatorClient := services.NewCalculatorClient(cc)
-	calculatorService := services.NewCalculatorService(calculatorClient)
+	//2. init client of file_grpc.pb.go
+	calculatorClient := services_proto.NewCalculatorClient(cc)
 
-	//call service
-	err = calculatorService.Hello("aomtest")
-	if err != nil {
-		log.Fatal(err)
+	//3. init service
+	calculatorService := services_proto.NewCalculatorService(calculatorClient)
+
+	//handle service method
+	if err := calculatorService.Hello("mock data name"); err != nil {
+		log.Fatalf("error service hello %s", err.Error())
 	}
 
 }
