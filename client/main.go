@@ -5,11 +5,15 @@ import (
 	"log"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
+	//0 add option insecure
+	creds := insecure.NewCredentials()
+
 	// 1. connect to grpc server and port start
-	cc, err := grpc.Dial("localhost:50051")
+	cc, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Fatalln(err)
 	}
