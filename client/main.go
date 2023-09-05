@@ -31,7 +31,15 @@ func main() {
 			log.Fatalf("error service hello %s", err.Error())
 		}
 	*/
-	if err := calculatorService.Fibonnacci(3); err != nil {
+
+	/*
+		if err := calculatorService.Fibonnacci(3); err != nil {
+			log.Fatal(err)
+		}
+	*/
+
+	// ส่ง req กี่ตัวก็ได้ มันจะสรุปส่งเป็น slice number เข้าไป
+	if err := calculatorService.Average(1, 2, 3, 5); err != nil {
 		log.Fatal(err)
 	}
 
