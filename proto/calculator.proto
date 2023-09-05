@@ -7,6 +7,15 @@ option go_package= "./services-proto";
 service Calculator {
     rpc Hello(HelloRequest) returns (HelloResponse);
     rpc Fibonacci(FibonacciRequest) returns (stream FibonacciResponse);
+    rpc Average(stream AverageRequest) returns (AverageResponse);
+}
+message AverageRequest{
+    double number =1;
+}
+
+message AverageResponse{
+    double result =1;
+
 }
 
 message FibonacciRequest{

@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Calculator_Hello_FullMethodName     = "/grpcservices.Calculator/Hello"
 	Calculator_Fibonacci_FullMethodName = "/grpcservices.Calculator/Fibonacci"
+	Calculator_Average_FullMethodName   = "/grpcservices.Calculator/Average"
 )
 
 // CalculatorClient is the client API for Calculator service.
@@ -29,6 +30,7 @@ const (
 type CalculatorClient interface {
 	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 	Fibonacci(ctx context.Context, in *FibonacciRequest, opts ...grpc.CallOption) (Calculator_FibonacciClient, error)
+	Average(ctx context.Context, opts ...grpc.CallOption) (Calculator_AverageClient, error)
 }
 
 type calculatorClient struct {
@@ -80,12 +82,47 @@ func (x *calculatorFibonacciClient) Recv() (*FibonacciResponse, error) {
 	return m, nil
 }
 
+func (c *calculatorClient) Average(ctx context.Context, opts ...grpc.CallOption) (Calculator_AverageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Calculator_ServiceDesc.Streams[1], Calculator_Average_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &calculatorAverageClient{stream}
+	return x, nil
+}
+
+type Calculator_AverageClient interface {
+	Send(*AverageRequest) error
+	CloseAndRecv() (*AverageResponse, error)
+	grpc.ClientStream
+}
+
+type calculatorAverageClient struct {
+	grpc.ClientStream
+}
+
+func (x *calculatorAverageClient) Send(m *AverageRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *calculatorAverageClient) CloseAndRecv() (*AverageResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(AverageResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CalculatorServer is the server API for Calculator service.
 // All implementations must embed UnimplementedCalculatorServer
 // for forward compatibility
 type CalculatorServer interface {
 	Hello(context.Context, *HelloRequest) (*HelloResponse, error)
 	Fibonacci(*FibonacciRequest, Calculator_FibonacciServer) error
+	Average(Calculator_AverageServer) error
 	mustEmbedUnimplementedCalculatorServer()
 }
 
@@ -98,6 +135,9 @@ func (UnimplementedCalculatorServer) Hello(context.Context, *HelloRequest) (*Hel
 }
 func (UnimplementedCalculatorServer) Fibonacci(*FibonacciRequest, Calculator_FibonacciServer) error {
 	return status.Errorf(codes.Unimplemented, "method Fibonacci not implemented")
+}
+func (UnimplementedCalculatorServer) Average(Calculator_AverageServer) error {
+	return status.Errorf(codes.Unimplemented, "method Average not implemented")
 }
 func (UnimplementedCalculatorServer) mustEmbedUnimplementedCalculatorServer() {}
 
@@ -151,6 +191,32 @@ func (x *calculatorFibonacciServer) Send(m *FibonacciResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Calculator_Average_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CalculatorServer).Average(&calculatorAverageServer{stream})
+}
+
+type Calculator_AverageServer interface {
+	SendAndClose(*AverageResponse) error
+	Recv() (*AverageRequest, error)
+	grpc.ServerStream
+}
+
+type calculatorAverageServer struct {
+	grpc.ServerStream
+}
+
+func (x *calculatorAverageServer) SendAndClose(m *AverageResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *calculatorAverageServer) Recv() (*AverageRequest, error) {
+	m := new(AverageRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Calculator_ServiceDesc is the grpc.ServiceDesc for Calculator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -168,6 +234,11 @@ var Calculator_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "Fibonacci",
 			Handler:       _Calculator_Fibonacci_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "Average",
+			Handler:       _Calculator_Average_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "calculator.proto",
