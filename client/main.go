@@ -26,8 +26,13 @@ func main() {
 	calculatorService := services_proto.NewCalculatorService(calculatorClient)
 
 	//handle service method
-	if err := calculatorService.Hello("mock data name"); err != nil {
-		log.Fatalf("error service hello %s", err.Error())
+	/*
+		if err := calculatorService.Hello("mock data name"); err != nil {
+			log.Fatalf("error service hello %s", err.Error())
+		}
+	*/
+	if err := calculatorService.Fibonnacci(3); err != nil {
+		log.Fatal(err)
 	}
 
 }
