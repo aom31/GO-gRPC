@@ -11,6 +11,8 @@ import (
 type CalculatorService interface {
 	Hello(name string) error
 	Fibonnacci(n uint32) error
+
+	Average(numbers ...float64) error
 }
 
 type calculatorService struct {
@@ -74,5 +76,35 @@ func (service calculatorService) Fibonnacci(n uint32) error {
 		fmt.Printf("Response from stream : %v \n", res.Result)
 	}
 
+	return nil
+}
+
+func (service calculatorService) Average(numbers ...float64) error {
+
+	//0. เรียกเอา stream ออกมาก่อน จาก
+	streamReq, err := service.calculatorClient.Average(context.Background())
+	if err != nil {
+		return err
+	}
+
+	//1. ทำการ วน loop req
+	for _, number := range numbers {
+		//2. ปั้น request ใน message Request model ส่งไปให้ server เรืื่อยๆๆ
+		req := AverageRequest{
+			Number: number,
+		}
+
+		//3. client ปั้น request แบบวน loop แล้วส่งเป็น stream ไปเรื่อยๆ
+		streamReq.Send(&req)
+		// เพิ่ม delay ทยอยส่ง เดี๋ยวมันจะเร็วเกิน
+		time.Sleep(time.Second)
+	}
+
+	//4. ตอนจบ stream แล้ว ให้ได้รับ response จาก server กลับมา
+	res, err := streamReq.CloseAndRecv()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Response from server: %v \n", res)
 	return nil
 }
